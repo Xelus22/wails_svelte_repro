@@ -1,0 +1,76 @@
+name: Wails build
+
+on:
+  push:
+    tags:
+      # Match any new tag
+      - "*"
+
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: "Log level"
+        required: true
+        default: "warning"
+      tags:
+        description: "Manual trigger"
+
+env:
+  # Necessary for most environments as build failure can occur due to OOM issues
+  NODE_OPTIONS: "--max-old-space-size=4096"
+
+jobs:
+  build:
+    strategy:
+      # Failure in one platform build won't impact the others
+      fail-fast: false
+      matrix:
+        build:
+          - name: "App"
+            platform: "linux/amd64"
+            os: "ubuntu-latest"
+          - name: "App"
+            platform: "windows/amd64"
+            os: "windows-latest"
+          - name: "App"
+            platform: "darwin/universal"
+            os: "macos-latest"
+
+    runs-on: ${{ matrix.build.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Install libhidapi-dev (Linux only)
+        if: ${{ matrix.build.platform == 'linux/amd64' }}
+        run: |
+          sudo apt-get install -y libhidapi-dev
+          sudo apt-get install -y libudev-dev
+          sudo apt-get install -y libusb-1.0-0-dev
+
+      - name: Setup Go (macOS Only)
+        if: ${{ matrix.build.platform == 'darwin/universal' }}
+        uses: actions/setup-go@v2
+        with:
+          go-version: "^1.22.1"
+
+      - name: Go version
+        run: go version
+
+      - name: enable CGO (Linux Only)
+        if: ${{ matrix.build.platform == 'linux/amd64' }}
+        run: export CGO_ENABLED=1
+
+      - name: Install go-hid
+        run: go get github.com/sstallion/go-hid@latest
+
+      - name: Build wails
+        uses: dAppServer/wails-build-action@v2.2
+        id: build
+        with:
+          build-name: ${{ matrix.build.name }}
+          build-platform: ${{ matrix.build.platform }}
+          package: true
+          go-version: "1.22.1"
