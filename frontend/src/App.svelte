@@ -1,4 +1,4 @@
-<main class="h-screen w-screen border box-border">
+<main class="h-screen w-screen border box-border border-black">
   <div>test text</div>
 </main>
 
