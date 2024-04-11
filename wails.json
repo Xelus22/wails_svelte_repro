@@ -1,7 +1,7 @@
 {
   "$schema": "https://wails.io/schemas/config.v2.json",
-  "name": "viax_wails_svelte",
-  "outputfilename": "viax_wails_svelte",
+  "name": "wails_svelte_repro",
+  "outputfilename": "wails_svelte_repro",
   "frontend:install": "npm install",
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
